@@ -11,6 +11,12 @@ pub enum TokenKind {
     #[token(" ", lexer::word_callback)]
     Whitespace,
 
+    #[token("-#", lexer::word_callback)]
+    OpenComment,
+
+    #[token("#-", lexer::word_callback)]
+    CloseComment,
+
     #[token("\0", lexer::word_callback)]
     Eof,
 
@@ -46,10 +52,7 @@ pub enum TokenKind {
     #[token(":", lexer::word_callback)]
     Colon,
 
-    // Keywords
-    #[token("use", lexer::word_callback)]
-    KwUse,
-
+    // Declaration keywords
     #[token("func", lexer::word_callback)]
     KwFunc,
 
@@ -65,6 +68,13 @@ pub enum TokenKind {
     #[token("enum", lexer::word_callback)]
     KwEnum,
 
+    #[token("class", lexer::word_callback)]
+    KwClass,
+
+    #[token("trait", lexer::word_callback)]
+    KwTrait,
+
+    // Visibility modifiers keywords
     #[token("pub", lexer::word_callback)]
     KwPub,
 
@@ -74,27 +84,7 @@ pub enum TokenKind {
     #[token("prot", lexer::word_callback)]
     KwProt,
 
-    #[token("over", lexer::word_callback)]
-    KwOver,
-
-    #[token("class", lexer::word_callback)]
-    KwClass,
-
-    #[token("extends", lexer::word_callback)]
-    KwExtends,
-
-    #[token("impl", lexer::word_callback)]
-    KwImpl,
-
-    #[token("trait", lexer::word_callback)]
-    KwTrait,
-
-    #[token("new", lexer::word_callback)]
-    KwNew,
-
-    #[token("destroy", lexer::word_callback)]
-    KwDestroy,
-
+    // Logical keywords
     #[token("if", lexer::word_callback)]
     KwIf,
 
@@ -104,6 +94,7 @@ pub enum TokenKind {
     #[token("elif", lexer::word_callback)]
     KwElif,
 
+    // Loop keywords
     #[token("while", lexer::word_callback)]
     KwWhile,
 
@@ -113,6 +104,7 @@ pub enum TokenKind {
     #[token("for", lexer::word_callback)]
     KwFor,
 
+    // Control flow keywords
     #[token("return", lexer::word_callback)]
     KwReturn,
 
@@ -121,6 +113,25 @@ pub enum TokenKind {
 
     #[token("continue", lexer::word_callback)]
     KwContinue,
+
+    // Special keywords
+    #[token("use", lexer::word_callback)]
+    KwUse,
+
+    #[token("over", lexer::word_callback)]
+    KwOver,
+
+    #[token("extends", lexer::word_callback)]
+    KwExtends,
+
+    #[token("impl", lexer::word_callback)]
+    KwImpl,
+
+    #[token("new", lexer::word_callback)]
+    KwNew,
+
+    #[token("destroy", lexer::word_callback)]
+    KwDestroy,
 
     // Bult-in types (Keywords too)
     #[token("void", lexer::word_callback)]
@@ -143,6 +154,82 @@ pub enum TokenKind {
 
     #[token("str", lexer::word_callback)]
     TyString,
+
+    // Binary operators
+    #[token("+", lexer::word_callback)]
+    OpAdd,
+
+    #[token("-", lexer::word_callback)]
+    OpSub,
+
+    #[token("*", lexer::word_callback)]
+    OpMul,
+
+    #[token("/", lexer::word_callback)]
+    OpDiv,
+
+    #[token("%", lexer::word_callback)]
+    OpMod,
+
+    // Logical operators
+    #[token("==", lexer::word_callback)]
+    OpEq,
+
+    #[token("!=", lexer::word_callback)]
+    OpNeq,
+
+    #[token("&&", lexer::word_callback)]
+    #[token("and", lexer::word_callback)]
+    OpAnd,
+
+    #[token("||", lexer::word_callback)]
+    #[token("or", lexer::word_callback)]
+    OpOr,
+
+    #[token("!", lexer::word_callback)]
+    #[token("not", lexer::word_callback)]
+    OpNot,
+
+    #[token("<", lexer::word_callback)]
+    OpLt,
+
+    #[token(">", lexer::word_callback)]
+    OpGt,
+
+    #[token("<=", lexer::word_callback)]
+    OpLe,
+
+    #[token(">=", lexer::word_callback)]
+    OpGe,
+
+    // Assignment operators
+    #[token("=", lexer::word_callback)]
+    OpAssign,
+
+    #[token("+=", lexer::word_callback)]
+    OpAddAssign,
+
+    #[token("-=", lexer::word_callback)]
+    OpSubAssign,
+
+    #[token("*=", lexer::word_callback)]
+    OpMulAssign,
+
+    #[token("/=", lexer::word_callback)]
+    OpDivAssign,
+
+    #[token("%=", lexer::word_callback)]
+    OpModAssign,
+
+    // Special operators
+    #[token("++", lexer::word_callback)]
+    OpInc,
+
+    #[token("--", lexer::word_callback)]
+    OpDec,
+
+    #[token("->", lexer::word_callback)]
+    OpArrow,
 
     // Literals
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", lexer::word_callback)]
