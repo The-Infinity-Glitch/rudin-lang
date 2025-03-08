@@ -1,4 +1,4 @@
-use crate::lexer;
+use crate::*;
 use logos;
 
 #[derive(logos::Logos, Debug, Clone, PartialEq)]
@@ -254,22 +254,20 @@ pub enum TokenKind {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
-    pub line: usize,
-    pub column: usize,
+    pub position: internals::Position,
     pub value: String,
 }
 
 impl Token {
-    pub fn new(kind: TokenKind, line: usize, column: usize, value: String) -> Self {
-        Token {
+    pub fn new(kind: TokenKind, position: internals::Position, value: String) -> Self {
+        Self {
             kind,
-            line,
-            column,
+            position,
             value,
         }
     }
 
     pub fn get_position(&self) -> (usize, usize) {
-        (self.line, self.column)
+        (self.position.line, self.position.column)
     }
 }

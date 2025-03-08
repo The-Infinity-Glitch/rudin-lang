@@ -1,4 +1,6 @@
 pub mod tokens;
+use crate::*;
+
 use logos::{self, Logos};
 
 /// Update the line count and the char index.
@@ -46,8 +48,7 @@ impl Lexer {
 
                     let token = tokens::Token::new(
                         kind,
-                        token_position.0,
-                        token_position.1,
+                        internals::Position::new(token_position.0, token_position.1),
                         lex.slice().to_string(),
                     );
 
@@ -67,6 +68,13 @@ impl Lexer {
 
                 index += 1;
             }
+
+            // Insert EOF token at the end of the tokens vector
+            self.tokens.push(tokens::Token::new(
+                tokens::TokenKind::Eof,
+                internals::Position::new(token_position.0, token_position.1 + 1),
+                String::from("EOF"),
+            ));
         }
     }
 }
