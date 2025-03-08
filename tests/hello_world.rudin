@@ -1,0 +1,7 @@
+use stdio;
+
+pub func main() -> int {
+    std.console.printl("Hello, World!");
+
+    return 0;
+}

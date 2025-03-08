@@ -1,0 +1,5 @@
+class test_class {
+    pub func new() -> Self {
+        Self {}
+    }
+}
