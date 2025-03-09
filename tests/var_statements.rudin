@@ -1,2 +1,7 @@
 var my_int: int;
 var my_int2: int = 10;
+var my_int3: int = 20 + 10;
+var my_int4: int = 10 * 30 + 10;
+var my_int5: int = 10 / 20 * 60 + 30;
+var my_int6: int = 10 + my_int2;
+var my_int7: int = my_func(10 + 10, my_int4) + my_int5;

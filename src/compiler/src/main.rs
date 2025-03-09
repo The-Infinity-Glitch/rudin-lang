@@ -7,7 +7,10 @@ fn main() {
 
     lexer.lex();
 
-    dbg!(lexer.tokens.clone());
+    if lexer.output.len() != 0 {
+        dbg!(lexer.output);
+        std::process::exit(1);
+    }
 
     let mut parser: rudin::parser::Parser = rudin::parser::Parser::new(lexer.tokens);
 
@@ -15,6 +18,7 @@ fn main() {
 
     if parser.output.len() != 0 {
         dbg!(parser.output);
+        std::process::exit(1);
     }
 
     dbg!(parser.ast);
