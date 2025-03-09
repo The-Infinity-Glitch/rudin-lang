@@ -1,0 +1,2 @@
+var my_int: int;
+var my_int2: int = 10;

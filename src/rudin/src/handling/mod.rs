@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Debug, Clone)]
 pub enum MessageKind {
     Error,
     CodeError,
@@ -9,6 +10,7 @@ pub enum MessageKind {
     Info,
 }
 
+#[derive(Debug, Clone)]
 pub struct Message {
     kind: MessageKind,
     message: String,
@@ -45,6 +47,14 @@ impl Message {
                 message: format!("Expected {} but found {}", expected, found.value),
                 position: Some(found.position.clone()),
             })
+        }
+    }
+
+    pub fn unexpected_error(found: &lexer::tokens::Token) -> Self {
+        Self {
+            kind: MessageKind::CodeError,
+            message: format!("Unexpected token: {}", found.value),
+            position: Some(found.position.clone()),
         }
     }
 }
