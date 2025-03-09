@@ -18,6 +18,7 @@ pub fn word_callback(lex: &mut logos::Lexer<tokens::TokenKind>) {
 pub struct Lexer {
     pub tokens: Vec<tokens::Token>,
     input: String,
+    pub output: Vec<handling::Message>,
 }
 
 impl Lexer {
@@ -25,11 +26,13 @@ impl Lexer {
         Lexer {
             tokens: Vec::new(),
             input,
+            output: Vec::new(),
         }
     }
 
     pub fn lex(&mut self) {
-        let mut lex = tokens::TokenKind::lexer(self.input.as_str());
+        let mut lex: logos::Lexer<'_, tokens::TokenKind> =
+            tokens::TokenKind::lexer(self.input.as_str());
         let mut token_position: (usize, usize) = (0, 0);
 
         while let Some(token_kind) = lex.next() {
@@ -46,7 +49,7 @@ impl Lexer {
                         }
                     }
 
-                    let token = tokens::Token::new(
+                    let token: tokens::Token = tokens::Token::new(
                         kind,
                         internals::Position::new(token_position.0, token_position.1),
                         lex.slice().to_string(),
@@ -54,7 +57,19 @@ impl Lexer {
 
                     self.tokens.push(token);
                 }
-                Err(_) => {}
+                Err(_) => {
+                    let symbol: String = lex.slice().to_string();
+                    let position: internals::Position =
+                        internals::Position::new(token_position.0, lex.span().start - lex.extras.1);
+
+                    let error = handling::Message::new(
+                        handling::MessageKind::CodeError,
+                        format!("\"{}\" -> Undefined symbol", symbol),
+                        Some(position),
+                    );
+
+                    self.output.push(error);
+                }
             }
 
             let mut index: usize = 0;
@@ -68,13 +83,13 @@ impl Lexer {
 
                 index += 1;
             }
-
-            // Insert EOF token at the end of the tokens vector
-            self.tokens.push(tokens::Token::new(
-                tokens::TokenKind::Eof,
-                internals::Position::new(token_position.0, token_position.1 + 1),
-                String::from("EOF"),
-            ));
         }
+
+        // Insert EOF token at the end of the tokens vector
+        self.tokens.push(tokens::Token::new(
+            tokens::TokenKind::Eof,
+            internals::Position::new(token_position.0, token_position.1 + 1),
+            String::from("EOF"),
+        ));
     }
 }

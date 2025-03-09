@@ -9,6 +9,9 @@ pub enum Types {
     Array(Vec<Types>),
     Tuple(Vec<Types>),
     Vector(Vec<Types>),
-    Struct(std::collections::HashMap<String, Types>),
+    Struct,
+    Class,
     Function(std::collections::HashMap<String, Types>),
+    Custom(String),
+    Unknown,
 }

@@ -9,5 +9,9 @@ fn main() {
 
     dbg!(lexer.tokens.clone());
 
-    let parser: rudin::parser::Parser = rudin::parser::Parser::new(lexer.tokens);
+    let mut parser: rudin::parser::Parser = rudin::parser::Parser::new(lexer.tokens);
+
+    parser.parse();
+
+    dbg!(parser.ast);
 }
