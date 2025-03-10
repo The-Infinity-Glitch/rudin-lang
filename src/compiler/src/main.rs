@@ -1,51 +1,27 @@
+mod compiler;
 mod state;
 
-use rudin;
-
 fn main() {
+    // Receive arguments from the command line and remove the first argument (program name)
     let mut args: Vec<String> = std::env::args().collect();
     args.remove(0);
 
-    let state: state::State = match parse_args(args) {
-        Ok(state) => state,
-        Err(err) => {
-            dbg!(err);
-            std::process::exit(1);
-        }
-    };
-}
+    // Initialize the state (flags, output etc)
+    let mut state: state::State = state::State::new();
+    state.parse_args(args);
 
-fn parse_args(args: Vec<String>) -> Result<state::State, Vec<rudin::handling::Message>> {
-    let mut args_inter: std::iter::Peekable<std::vec::IntoIter<String>> =
-        args.into_iter().peekable();
-    let mut errors: Vec<rudin::handling::Message> = Vec::new();
-
-    while let Some(arg) = args_inter.next() {
-        match arg.as_str() {
-            "-h" | "--help" => {
-                println!("Usage: rudin [options] [file]");
-                println!("Options:");
-                println!("  -h, --help      Display this help message");
-                println!("  -v, --version   Display the version");
-                std::process::exit(0);
-            }
-            "-v" | "--version" => {
-                println!("rudin {}", env!("CARGO_PKG_VERSION"));
-                std::process::exit(0);
-            }
-            _ => {
-                errors.push(rudin::handling::Message::new(
-                    rudin::handling::MessageKind::Error,
-                    format!("Unknown option: {}", arg),
-                    None,
-                ));
-            }
-        }
+    // If we have errors
+    // TODO: We have to handle this better
+    if state.output.len() != 0 {
+        dbg!(state.output);
+        std::process::exit(1);
     }
 
-    if !errors.is_empty() {
-        return Err(errors);
-    }
+    let mut compiler: compiler::Compiler = compiler::Compiler::new(state);
+    compiler.compile();
 
-    Ok(state::State::new())
+    if compiler.output.len() != 0 {
+        dbg!(compiler.output);
+        std::process::exit(1);
+    }
 }
