@@ -17,6 +17,18 @@ fn main() {
         std::process::exit(1);
     }
 
+    if state.show_help {
+        println!("Rudin Compiler v{}", env!("CARGO_PKG_VERSION"));
+        let help_message = include_str!("../../../resources/helps/compiler_help.txt");
+        println!("{}", help_message);
+        std::process::exit(0);
+    }
+
+    if state.show_version {
+        println!("Rudin Compiler v{}", env!("CARGO_PKG_VERSION"));
+        std::process::exit(0);
+    }
+
     let mut compiler: compiler::Compiler = compiler::Compiler::new(state);
     compiler.compile();
 

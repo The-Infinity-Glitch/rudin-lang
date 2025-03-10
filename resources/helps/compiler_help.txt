@@ -1,0 +1,7 @@
+
+Usage: rudinc [OPTIONS] [FILES]
+
+Options:
+    -h, --help      Display this help message and exit
+    -v, --version   Display the version information and exit
+    -o, --output    Specify the output file name

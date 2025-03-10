@@ -28,6 +28,11 @@ impl State {
     }
 
     pub fn parse_args(&mut self, args: Vec<String>) {
+        if args.is_empty() {
+            self.show_help = true;
+            return;
+        }
+
         let mut args_inter: std::iter::Peekable<std::vec::IntoIter<String>> =
             args.into_iter().peekable();
 
