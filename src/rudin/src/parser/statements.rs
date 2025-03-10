@@ -85,12 +85,6 @@ pub struct FuncParam {
 }
 
 #[derive(Debug, Clone)]
-pub enum VarDeclarationKind {
-    Mutable,
-    Immutable,
-}
-
-#[derive(Debug, Clone)]
 pub enum ArrayAcess {
     Acess {
         name: String,

@@ -1,7 +1,7 @@
 use rudin;
 
 fn main() {
-    let input = include_str!("../../../tests/var_statements.rudin");
+    let input = include_str!("../../../tests/function_statements.rudin");
 
     let mut lexer: rudin::lexer::Lexer = rudin::lexer::Lexer::new(input.to_string());
 

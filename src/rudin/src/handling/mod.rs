@@ -12,9 +12,9 @@ pub enum MessageKind {
 
 #[derive(Debug, Clone)]
 pub struct Message {
-    kind: MessageKind,
-    message: String,
-    position: Option<internals::Position>,
+    pub kind: MessageKind,
+    pub message: String,
+    pub position: Option<internals::Position>,
 }
 
 impl Message {

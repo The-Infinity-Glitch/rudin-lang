@@ -1,0 +1,1 @@
+func func_name(param1: int, param2: float) -> void {}

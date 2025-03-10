@@ -30,6 +30,7 @@ impl Parser {
         while self.current_token.kind != lexer::tokens::TokenKind::Eof {
             let statement: Option<parser::statements::Statement> = match self.current().kind {
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
+                lexer::tokens::TokenKind::KwFunc => self.parse_function_statement(),
                 _ => {
                     self.output
                         .push(handling::Message::unexpected_error(self.current()));
@@ -99,86 +100,6 @@ impl Parser {
                 return None;
             }
         }
-    }
-
-    /// Parse the parameters inside parenthesis -> (param: type, other_param: type)
-    fn parse_params(&mut self) -> Option<Vec<parser::statements::FuncParam>> {
-        // '('
-        self.advance();
-
-        // "name: type" <- without the space
-        let mut param: parser::statements::FuncParam;
-        let mut params: Vec<parser::statements::FuncParam> = Vec::new();
-
-        // If doesn't have parameters
-        if self.peek_expect(&lexer::tokens::TokenKind::LeftParen) {
-            return Some(params);
-        }
-
-        // while doesn't reaches ')' or EOF
-        while !self.peek_expect(&lexer::tokens::TokenKind::RightParen)
-            || !self.peek_expect(&lexer::tokens::TokenKind::Eof)
-        {
-            // If the first piece of the param isn't a identifier (name)
-            if !self.peek_expect(&lexer::tokens::TokenKind::Identifier) {
-                self.output.push(handling::Message::expected_error(
-                    "Identifier",
-                    self.current(),
-                ));
-                return None;
-            }
-
-            let name: String = self.current().value.clone();
-            self.advance();
-
-            // After the name ':'
-            if let Some(message) = handling::Message::expected_or_error(
-                lexer::tokens::TokenKind::Colon,
-                "\':\'",
-                self.current(),
-            ) {
-                self.output.push(message);
-                return None;
-            }
-
-            self.advance();
-
-            // The type of the parameter
-            let r#type: internals::types::Types = match self.get_type() {
-                Some(r#type) => r#type,
-                None => {
-                    self.output
-                        .push(handling::Message::expected_error("a type", self.current()));
-                    return None;
-                }
-            };
-            self.advance();
-
-            param = parser::statements::FuncParam { name, r#type };
-
-            // The end of the parameters or another parameter
-            if self.peek_expect(&lexer::tokens::TokenKind::RightParen) {
-                params.push(param.to_owned());
-                break;
-            } else if self.peek_expect(&lexer::tokens::TokenKind::Comma) {
-                params.push(param.to_owned());
-                self.advance();
-            } else {
-                self.output.push(handling::Message::expected_error(
-                    "\',\' or \')\'",
-                    self.current(),
-                ));
-                return None;
-            }
-        }
-
-        if !self.peek_expect(&lexer::tokens::TokenKind::RightParen) {
-            self.output
-                .push(handling::Message::expected_error("\')\'", self.current()));
-            return None;
-        }
-
-        return Some(params);
     }
 
     /// Parse a function call -> function_identifier(arguments)
@@ -643,5 +564,186 @@ impl Parser {
             r#type,
             value: Some(value),
         });
+    }
+
+    fn parse_block_statement(&mut self) -> Option<Box<Vec<parser::statements::Statement>>> {
+        // '{'
+        if let Some(message) = handling::Message::expected_or_error(
+            lexer::tokens::TokenKind::LeftBrace,
+            "start of block",
+            self.current(),
+        ) {
+            self.output.push(message);
+            return None;
+        }
+        self.advance();
+
+        let block: Box<Vec<parser::statements::Statement>> = Box::new(Vec::new());
+
+        while !(self
+            .current_kind()
+            .eq(&lexer::tokens::TokenKind::RightBrace)
+            || self.current_kind().eq(&lexer::tokens::TokenKind::Eof))
+        {
+            self.advance();
+        }
+
+        match self.current_kind() {
+            lexer::tokens::TokenKind::RightBrace => {}
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "end of block",
+                    self.current(),
+                ));
+                return None;
+            }
+        }
+
+        return Some(block);
+    }
+
+    /// Parse the parameters inside parenthesis -> (param: type, other_param: type)
+    fn parse_function_parameters_statement(
+        &mut self,
+    ) -> Option<Vec<parser::statements::FuncParam>> {
+        // '('
+        self.advance();
+
+        // "name: type" <- without the space
+        let mut param: parser::statements::FuncParam;
+        let mut params: Vec<parser::statements::FuncParam> = Vec::new();
+
+        // If doesn't have parameters
+        if self.peek_expect(&lexer::tokens::TokenKind::LeftParen) {
+            return Some(params);
+        }
+
+        // while doesn't reaches ')' or EOF
+        while !self.peek_expect(&lexer::tokens::TokenKind::RightParen)
+            || !self.peek_expect(&lexer::tokens::TokenKind::Eof)
+        {
+            // If the first piece of the param isn't a identifier (name)
+            if !self.peek_expect(&lexer::tokens::TokenKind::Identifier) {
+                self.output.push(handling::Message::expected_error(
+                    "Identifier",
+                    self.current(),
+                ));
+                return None;
+            }
+
+            let name: String = self.current().value.clone();
+            self.advance();
+
+            // After the name ':'
+            if let Some(message) = handling::Message::expected_or_error(
+                lexer::tokens::TokenKind::Colon,
+                "\':\'",
+                self.current(),
+            ) {
+                self.output.push(message);
+                return None;
+            }
+
+            self.advance();
+
+            // The type of the parameter
+            let r#type: internals::types::Types = match self.get_type() {
+                Some(r#type) => r#type,
+                None => {
+                    self.output
+                        .push(handling::Message::expected_error("a type", self.current()));
+                    return None;
+                }
+            };
+            self.advance();
+
+            param = parser::statements::FuncParam { name, r#type };
+
+            // The end of the parameters or another parameter
+            if self.peek_expect(&lexer::tokens::TokenKind::RightParen) {
+                params.push(param.to_owned());
+                break;
+            } else if self.peek_expect(&lexer::tokens::TokenKind::Comma) {
+                params.push(param.to_owned());
+                self.advance();
+            } else {
+                self.output.push(handling::Message::expected_error(
+                    "\',\' or \')\'",
+                    self.current(),
+                ));
+                return None;
+            }
+        }
+
+        if !self.peek_expect(&lexer::tokens::TokenKind::RightParen) {
+            self.output
+                .push(handling::Message::expected_error("\')\'", self.current()));
+            return None;
+        }
+
+        return Some(params);
+    }
+
+    fn parse_function_statement(&mut self) -> Option<parser::statements::Statement> {
+        let func_token: lexer::tokens::Token = self.current().clone();
+        self.advance();
+
+        let name = match self.current().kind {
+            lexer::tokens::TokenKind::Identifier => self.current().value.clone(),
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "identifier",
+                    self.current(),
+                ));
+                return None;
+            }
+        };
+        self.advance();
+
+        let params: Vec<parser::statements::FuncParam> =
+            match self.parse_function_parameters_statement() {
+                Some(params) => params,
+                None => {
+                    return None;
+                }
+            };
+        self.advance();
+
+        if let Some(message) = handling::Message::expected_or_error(
+            lexer::tokens::TokenKind::OpArrow,
+            "\"->\"",
+            self.current(),
+        ) {
+            self.output.push(message);
+            return None;
+        }
+        self.advance();
+
+        let r#type: internals::types::Types = match self.get_type() {
+            Some(t) => t,
+            None => {
+                return None;
+            }
+        };
+        self.advance();
+
+        let body: Box<Vec<parser::statements::Statement>> = match self.parse_block_statement() {
+            Some(body) => body,
+            None => {
+                return None;
+            }
+        };
+
+        Some(parser::statements::Statement::FunctionDeclaration {
+            start: func_token.position,
+            name,
+            params: if params.is_empty() {
+                None
+            } else {
+                Some(params)
+            },
+            r#type,
+            body: Some(body),
+        })
     }
 }
