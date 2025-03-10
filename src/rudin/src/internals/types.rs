@@ -3,6 +3,7 @@ pub enum Types {
     Void,
     Int,
     Float,
+    Double,
     String,
     Bool,
     Char,

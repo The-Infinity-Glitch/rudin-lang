@@ -87,6 +87,7 @@ impl Parser {
         match self.current_kind() {
             lexer::tokens::TokenKind::TyInt => Some(internals::types::Types::Int),
             lexer::tokens::TokenKind::TyFloat => Some(internals::types::Types::Float),
+            lexer::tokens::TokenKind::TyDouble => Some(internals::types::Types::Double),
             lexer::tokens::TokenKind::TyBool => Some(internals::types::Types::Bool),
             lexer::tokens::TokenKind::TyChar => Some(internals::types::Types::Char),
             lexer::tokens::TokenKind::TyString => Some(internals::types::Types::String),
@@ -578,13 +579,30 @@ impl Parser {
         }
         self.advance();
 
-        let block: Box<Vec<parser::statements::Statement>> = Box::new(Vec::new());
+        let mut block: Box<Vec<parser::statements::Statement>> = Box::new(Vec::new());
 
         while !(self
             .current_kind()
             .eq(&lexer::tokens::TokenKind::RightBrace)
             || self.current_kind().eq(&lexer::tokens::TokenKind::Eof))
         {
+            let statement: Option<parser::statements::Statement> = match self.current_kind() {
+                lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
+                _ => {
+                    self.output.push(handling::Message::expected_error(
+                        "a statement",
+                        self.current(),
+                    ));
+                    return None;
+                }
+            };
+
+            if let Some(statement) = statement {
+                block.push(statement);
+            } else {
+                return None;
+            }
+
             self.advance();
         }
 
