@@ -10,6 +10,7 @@ pub struct Parser {
 }
 
 impl Parser {
+    /// Creates a new parser instance.
     pub fn new(tokens: Vec<lexer::tokens::Token>) -> Self {
         let mut tokens = tokens.into_iter().peekable();
         let current_token = tokens.next().unwrap();
@@ -26,6 +27,7 @@ impl Parser {
         }
     }
 
+    /// Parses the input tokens and constructs the AST.
     pub fn parse(&mut self) {
         while self.current_token.kind != lexer::tokens::TokenKind::Eof {
             let statement: Option<parser::statements::Statement> = match self.current().kind {
@@ -48,6 +50,7 @@ impl Parser {
         }
     }
 
+    /// Pushes a statement onto the AST.
     fn push_statement(&mut self, statement: parser::statements::Statement) {
         match &mut self.ast {
             parser::statements::Statement::Program { body, .. } => {
@@ -57,14 +60,17 @@ impl Parser {
         }
     }
 
+    /// Returns the current token.
     fn current(&self) -> &lexer::tokens::Token {
         &self.current_token
     }
 
+    /// Returns the kind of the current token.
     fn current_kind(&self) -> &lexer::tokens::TokenKind {
         &self.current_token.kind
     }
 
+    /// Advances the parser to the next token.
     fn advance(&mut self) {
         match self.current().kind {
             lexer::tokens::TokenKind::Eof => {}
@@ -72,6 +78,7 @@ impl Parser {
         }
     }
 
+    /// Returns the kind of the next token without consuming it.
     fn peek_kind(&mut self) -> &lexer::tokens::TokenKind {
         match self.tokens.peek() {
             Some(token) => &token.kind,
@@ -79,10 +86,12 @@ impl Parser {
         }
     }
 
+    /// Checks if the next token matches the expected token kind.
     fn peek_expect(&mut self, expected: &lexer::tokens::TokenKind) -> bool {
         self.current_kind().eq(expected)
     }
 
+    /// Transforms the current token into a type.
     fn get_type(&mut self) -> Option<internals::types::Types> {
         match self.current_kind() {
             lexer::tokens::TokenKind::TyInt => Some(internals::types::Types::Int),
@@ -103,7 +112,7 @@ impl Parser {
         }
     }
 
-    /// Parse a function call -> function_identifier(arguments)
+    /// Parse a function call expression -> function_identifier(arguments)
     fn parse_function_call(&mut self) -> Option<parser::statements::Expression> {
         // The function identifier(name)
         let name: String = self.current().value.clone();
@@ -198,7 +207,7 @@ impl Parser {
         }
     }
 
-    /// Parse the expression
+    /// Parse the primary expression.
     fn parse_primary_expression(&mut self) -> Option<parser::statements::Expression> {
         let token: lexer::tokens::Token = self.current().to_owned();
 
@@ -235,7 +244,7 @@ impl Parser {
         }
     }
 
-    /// Parse unary expressions
+    /// Parse unary expressions.
     fn parse_unary_expression(&mut self) -> Option<parser::statements::Expression> {
         match self.current_kind() {
             lexer::tokens::TokenKind::OpAdd => {
@@ -484,6 +493,7 @@ impl Parser {
         self.parse_or_expression()
     }
 
+    /// Parse a variable statement (declaration)
     fn parse_var_statement(&mut self) -> Option<parser::statements::Statement> {
         // "var" -> token
         let var_token: lexer::tokens::Token = self.current().clone();
@@ -567,6 +577,7 @@ impl Parser {
         });
     }
 
+    /// Parse a block statement -> { ... statements ... }
     fn parse_block_statement(&mut self) -> Option<Box<Vec<parser::statements::Statement>>> {
         // '{'
         if let Some(message) = handling::Message::expected_or_error(
@@ -702,6 +713,7 @@ impl Parser {
         return Some(params);
     }
 
+    /// Parse a function statement -> func identifier (parameters) -> return_type { ... statements ... }
     fn parse_function_statement(&mut self) -> Option<parser::statements::Statement> {
         let func_token: lexer::tokens::Token = self.current().clone();
         self.advance();
