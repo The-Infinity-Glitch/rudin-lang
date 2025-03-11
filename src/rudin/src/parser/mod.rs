@@ -238,7 +238,7 @@ impl Parser {
             }
             lexer::tokens::TokenKind::Eof => {
                 self.output.push(handling::Message::expected_error(
-                    "end of the expression",
+                    "end of expression",
                     &token,
                 ));
                 return None;
@@ -840,6 +840,30 @@ impl Parser {
             }
         };
         self.advance();
+
+        match self.current().kind {
+            lexer::tokens::TokenKind::Semicolon => {
+                return Some(parser::statements::Statement::FunctionDeclaration {
+                    start: func_token.position,
+                    name,
+                    params: if params.is_empty() {
+                        None
+                    } else {
+                        Some(params)
+                    },
+                    r#type,
+                    body: None,
+                });
+            }
+            lexer::tokens::TokenKind::LeftBrace => {}
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "end of statement or code block",
+                    self.current(),
+                ));
+                return None;
+            }
+        }
 
         let body: Box<Vec<parser::statements::Statement>> = match self.parse_block_statement() {
             Some(body) => body,

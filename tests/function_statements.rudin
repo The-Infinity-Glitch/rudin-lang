@@ -1,4 +1,6 @@
-func func_name(param1: int, param2: float) -> void {}
+func func_name(param1: int, param2: float) -> void;
+
+func func_name1(param1: int, param2: float) -> void {}
 
 func func_name2(param1: int, param2: float) -> void {
     var x: double = param1 + param2;
