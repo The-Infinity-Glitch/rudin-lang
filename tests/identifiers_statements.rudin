@@ -1,3 +1,8 @@
+func say_hello() -> void {
+    std::console::println("Hello, World!");
+}
+
 func main() -> int {
-    println("Hello, World!");
+    std::console::println("Hello, World!");
+    say_hello();
 }

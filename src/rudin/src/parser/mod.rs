@@ -889,8 +889,29 @@ impl Parser {
     fn parse_identifier_statement(&mut self) -> Option<parser::statements::Statement> {
         match self.current_kind() {
             lexer::tokens::TokenKind::Identifier => match self.peek_kind() {
+                lexer::tokens::TokenKind::ColonColon => {
+                    let namespace_name: String = self.current().value.clone();
+
+                    self.advance();
+                    self.advance();
+
+                    let identifier_statement: parser::statements::Statement =
+                        match self.parse_identifier_statement() {
+                            Some(identifier_statement) => identifier_statement,
+                            None => return None,
+                        };
+
+                    let mut push: Vec<parser::statements::Statement> = Vec::new();
+                    push.push(identifier_statement);
+
+                    return Some(parser::statements::Statement::NamespacePush {
+                        name: namespace_name,
+                        push,
+                    });
+                }
                 lexer::tokens::TokenKind::LeftParen => {
-                    let func_call = match self.parse_function_call() {
+                    let func_call: parser::statements::Expression = match self.parse_function_call()
+                    {
                         Some(func_call) => func_call,
                         None => return None,
                     };
