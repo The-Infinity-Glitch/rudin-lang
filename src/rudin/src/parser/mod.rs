@@ -32,6 +32,7 @@ impl Parser {
         while self.current_token.kind != lexer::tokens::TokenKind::Eof {
             let statement: Option<parser::statements::Statement> = match self.current().kind {
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
+                lexer::tokens::TokenKind::KwConst => self.parse_const_statement(),
                 lexer::tokens::TokenKind::KwFunc => self.parse_function_statement(),
                 _ => {
                     self.output
@@ -577,6 +578,82 @@ impl Parser {
         });
     }
 
+    /// Parse a constant statement (declaration)
+    fn parse_const_statement(&mut self) -> Option<parser::statements::Statement> {
+        // "const" -> token
+        let const_token: lexer::tokens::Token = self.current().clone();
+        self.advance();
+
+        // The variable name
+        let name: String = match self.current().kind {
+            lexer::tokens::TokenKind::Identifier => self.current().value.clone(),
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "an identifier",
+                    self.current(),
+                ));
+                return None;
+            }
+        };
+        self.advance();
+
+        if let Some(message) = handling::Message::expected_or_error(
+            lexer::tokens::TokenKind::Colon,
+            "a colon",
+            self.current(),
+        ) {
+            self.output.push(message);
+            return None;
+        }
+        self.advance();
+
+        let r#type: internals::types::Types = match self.get_type() {
+            Some(t) => t,
+            None => {
+                return None;
+            }
+        };
+        self.advance();
+
+        match self.current().kind {
+            lexer::tokens::TokenKind::OpAssign => {
+                self.advance();
+            }
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "assignment operator or end of statement",
+                    self.current(),
+                ));
+                return None;
+            }
+        }
+
+        let value = match self.parse_expression() {
+            Some(expr) => expr,
+            None => {
+                return None;
+            }
+        };
+
+        self.advance();
+
+        if let Some(message) = handling::Message::expected_or_error(
+            lexer::tokens::TokenKind::Semicolon,
+            "end of statement",
+            self.current(),
+        ) {
+            self.output.push(message);
+            return None;
+        }
+
+        return Some(parser::statements::Statement::ConstantDeclaration {
+            start: const_token.position,
+            name,
+            r#type,
+            value,
+        });
+    }
+
     /// Parse a block statement -> { ... statements ... }
     fn parse_block_statement(&mut self) -> Option<Box<Vec<parser::statements::Statement>>> {
         // '{'
@@ -599,6 +676,7 @@ impl Parser {
         {
             let statement: Option<parser::statements::Statement> = match self.current_kind() {
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
+                lexer::tokens::TokenKind::KwConst => self.parse_const_statement(),
                 _ => {
                     self.output.push(handling::Message::expected_error(
                         "a statement",
