@@ -235,10 +235,10 @@ pub enum TokenKind {
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", lexer::word_callback)]
     Identifier,
 
-    #[regex("[0-9]+", lexer::word_callback)]
+    #[regex(r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?", lexer::word_callback)]
     Number,
 
-    #[regex(r#"'([^"\\]|\\["\\bnfrt]|u[a-fA-F0-9]{4})*'"#, lexer::word_callback)]
+    #[regex(r#"'([^'\\]|\\['\\bnfrt]|u[a-fA-F0-9]{4})*'"#, lexer::word_callback)]
     CharLiteral,
 
     #[regex(r#""([^"\\]|\\["\\bnfrt]|u[a-fA-F0-9]{4})*""#, lexer::word_callback)]

@@ -60,7 +60,7 @@ impl Lexer {
                 Err(_) => {
                     let symbol: String = lex.slice().to_string();
                     let position: internals::Position =
-                        internals::Position::new(token_position.0, lex.span().start - lex.extras.1);
+                        internals::Position::new(token_position.0, token_position.1);
 
                     let error = handling::Message::new(
                         handling::MessageKind::CodeError,
