@@ -17,6 +17,9 @@ pub enum TokenKind {
     #[token("#-", lexer::word_callback)]
     CloseComment,
 
+    #[token("::", lexer::word_callback)]
+    ColonColon,
+
     #[token("\0", lexer::word_callback)]
     Eof,
 
