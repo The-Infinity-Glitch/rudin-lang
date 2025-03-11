@@ -5,7 +5,7 @@ use logos;
 #[logos(extras = (usize, usize))]
 pub enum TokenKind {
     // Special tokens
-    #[token("\n", lexer::word_callback)]
+    #[token("\n", lexer::newline_callback)]
     NewLine,
 
     #[token(" ", lexer::word_callback)]
