@@ -683,6 +683,7 @@ impl Parser {
             let statement: Option<parser::statements::Statement> = match self.current_kind() {
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
                 lexer::tokens::TokenKind::KwConst => self.parse_const_statement(),
+                lexer::tokens::TokenKind::Identifier => self.parse_identifier_statement(),
                 _ => {
                     self.output.push(handling::Message::expected_error(
                         "a statement",
@@ -727,7 +728,7 @@ impl Parser {
         let mut params: Vec<parser::statements::FuncParam> = Vec::new();
 
         // If doesn't have parameters
-        if self.peek_expect(&lexer::tokens::TokenKind::LeftParen) {
+        if self.peek_expect(&lexer::tokens::TokenKind::RightParen) {
             return Some(params);
         }
 
@@ -883,5 +884,37 @@ impl Parser {
             r#type,
             body: Some(body),
         })
+    }
+
+    fn parse_identifier_statement(&mut self) -> Option<parser::statements::Statement> {
+        match self.current_kind() {
+            lexer::tokens::TokenKind::Identifier => match self.peek_kind() {
+                lexer::tokens::TokenKind::LeftParen => {
+                    let func_call = match self.parse_function_call() {
+                        Some(func_call) => func_call,
+                        None => return None,
+                    };
+                    self.advance();
+
+                    if self.current_kind().to_owned() != lexer::tokens::TokenKind::Semicolon {
+                        self.output.push(handling::Message::expected_error(
+                            "end of statement",
+                            self.current(),
+                        ));
+                        return None;
+                    }
+
+                    return Some(parser::statements::Statement::FunctionCall(func_call));
+                }
+                _ => return None,
+            },
+            _ => {
+                self.output.push(handling::Message::expected_error(
+                    "an identifier",
+                    self.current(),
+                ));
+                return None;
+            }
+        };
     }
 }
