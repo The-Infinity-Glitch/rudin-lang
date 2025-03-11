@@ -218,6 +218,12 @@ impl Parser {
                 r#type: lexer::tokens::TokenKind::Number,
                 value: self.current().value.to_owned(),
             }),
+            lexer::tokens::TokenKind::CharLiteral => {
+                Some(parser::statements::Expression::Literal {
+                    r#type: lexer::tokens::TokenKind::CharLiteral,
+                    value: self.current().value.to_owned(),
+                })
+            }
             lexer::tokens::TokenKind::StringLiteral => {
                 Some(parser::statements::Expression::Literal {
                     r#type: lexer::tokens::TokenKind::StringLiteral,
