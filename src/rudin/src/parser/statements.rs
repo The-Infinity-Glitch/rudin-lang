@@ -129,6 +129,10 @@ pub enum Expression {
         name: String,
         arguments: Option<Box<Vec<Expression>>>,
     },
+    NamespacePush {
+        name: String,
+        push: Vec<Expression>,
+    },
 }
 
 #[derive(Debug, Clone)]

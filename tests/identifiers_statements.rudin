@@ -1,8 +1,9 @@
-func say_hello() -> void {
-    std::console::println("Hello, World!");
+func sum(x: int, y: int) -> void {
+    std::console::println("{} + {} = {}", x, y, std::math::add(x, y));
 }
 
 func main() -> int {
     std::console::println("Hello, World!");
-    say_hello();
+
+    sum(1, 2);
 }
