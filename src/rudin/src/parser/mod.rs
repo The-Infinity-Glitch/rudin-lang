@@ -1,5 +1,7 @@
 pub mod statements;
 
+use std::ops::Deref;
+
 use crate::*;
 
 pub struct Parser {
@@ -31,6 +33,7 @@ impl Parser {
     pub fn parse(&mut self) {
         while self.current_token.kind != lexer::tokens::TokenKind::Eof {
             let statement: Option<parser::statements::Statement> = match self.current().kind {
+                lexer::tokens::TokenKind::KwUse => self.parse_use_statement(),
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
                 lexer::tokens::TokenKind::KwConst => self.parse_const_statement(),
                 lexer::tokens::TokenKind::KwFunc => self.parse_function_statement(),
@@ -113,6 +116,13 @@ impl Parser {
         }
     }
 
+    fn parse_use_statement(&mut self) -> Option<statements::Statement> {
+        // "use" <- start token
+        let use_token: lexer::tokens::Token = self.current().to_owned();
+
+        return None;
+    }
+
     /// Parse a function call expression -> function_identifier(arguments)
     fn parse_function_call(&mut self) -> Option<parser::statements::Expression> {
         // The function identifier(name)
@@ -189,8 +199,11 @@ impl Parser {
         });
     }
 
-    fn parse_namespace_push(&mut self) -> Option<statements::Expression> {
-        let namespace_name: String = self.current().value.clone();
+    fn parse_namespace_push(&mut self) -> Option<parser::statements::Expression> {
+        let mut names_path: Vec<String> = Vec::new();
+        let mut names_symbol: Option<parser::statements::Expression> = None;
+
+        names_path.push(self.current().value.clone());
 
         self.advance();
         self.advance();
@@ -200,12 +213,30 @@ impl Parser {
             None => return None,
         };
 
-        let mut push: Vec<parser::statements::Expression> = Vec::new();
-        push.push(identifier_expression);
+        match identifier_expression {
+            statements::Expression::NamespacePush { path, symbol } => {
+                names_path.extend(path);
+
+                match symbol {
+                    Some(symbol) => {
+                        names_symbol = Some(symbol.deref().clone());
+                    }
+                    None => {
+                        self.output.push(handling::Message::expected_error(
+                            "a symbol",
+                            self.current(),
+                        ));
+
+                        return None;
+                    }
+                }
+            }
+            _ => {}
+        }
 
         return Some(parser::statements::Expression::NamespacePush {
-            name: namespace_name,
-            push,
+            path: names_path,
+            symbol: Some(Box::new(names_symbol.unwrap())),
         });
     }
 
@@ -907,28 +938,17 @@ impl Parser {
         })
     }
 
+    fn parse_namespace_push_statement(&mut self) -> Option<parser::statements::Statement> {
+        let start_position: internals::Position = self.current().position.clone();
+
+        return None;
+    }
+
     fn parse_identifier_statement(&mut self) -> Option<parser::statements::Statement> {
         match self.current_kind() {
             lexer::tokens::TokenKind::Identifier => match self.peek_kind() {
                 lexer::tokens::TokenKind::ColonColon => {
-                    let namespace_name: String = self.current().value.clone();
-
-                    self.advance();
-                    self.advance();
-
-                    let identifier_statement: parser::statements::Statement =
-                        match self.parse_identifier_statement() {
-                            Some(identifier_statement) => identifier_statement,
-                            None => return None,
-                        };
-
-                    let mut push: Vec<parser::statements::Statement> = Vec::new();
-                    push.push(identifier_statement);
-
-                    return Some(parser::statements::Statement::NamespacePush {
-                        name: namespace_name,
-                        push,
-                    });
+                    return self.parse_namespace_push_statement();
                 }
                 lexer::tokens::TokenKind::LeftParen => {
                     let func_call: parser::statements::Expression = match self.parse_function_call()

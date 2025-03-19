@@ -6,6 +6,10 @@ pub enum Statement {
         start: internals::Position,
         body: Box<Vec<Statement>>,
     },
+    Use {
+        start: internals::Position,
+        path: String,
+    },
     VariableDeclaration {
         start: internals::Position,
         name: String,
@@ -69,10 +73,7 @@ pub enum Statement {
         operator: lexer::tokens::TokenKind,
         value: Expression,
     },
-    NamespacePush {
-        name: String,
-        push: Vec<Statement>,
-    },
+    NamespacePush(Expression),
     FunctionCall(Expression),
 }
 
@@ -130,8 +131,8 @@ pub enum Expression {
         arguments: Option<Box<Vec<Expression>>>,
     },
     NamespacePush {
-        name: String,
-        push: Vec<Expression>,
+        path: Vec<String>,
+        symbol: Option<Box<Expression>>,
     },
 }
 
