@@ -1,3 +1,4 @@
+pub mod evaluator;
 pub mod handling;
 pub mod internals;
 pub mod lexer;

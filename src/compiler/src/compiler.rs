@@ -52,7 +52,12 @@ impl Compiler {
                 break;
             }
 
-            dbg!(parser.ast);
+            dbg!(parser.ast.clone());
+
+            let mut evaluator: rudin::evaluator::Evaluator =
+                rudin::evaluator::Evaluator::new(parser.ast.clone());
+
+            evaluator.evaluate();
         }
     }
 
