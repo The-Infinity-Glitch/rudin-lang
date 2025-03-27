@@ -189,32 +189,11 @@ impl Parser {
         });
     }
 
-    fn parse_namespace_push(&mut self) -> Option<statements::Expression> {
-        let namespace_name: String = self.current().value.clone();
-
-        self.advance();
-        self.advance();
-
-        let identifier_expression: parser::statements::Expression = match self.parse_identifier() {
-            Some(identifier_statement) => identifier_statement,
-            None => return None,
-        };
-
-        let mut push: Vec<parser::statements::Expression> = Vec::new();
-        push.push(identifier_expression);
-
-        return Some(parser::statements::Expression::NamespacePush {
-            name: namespace_name,
-            push,
-        });
-    }
-
     /// Parse identifiers -> function calls, push identifier value...
     fn parse_identifier(&mut self) -> Option<parser::statements::Expression> {
         match self.current_kind() {
             lexer::tokens::TokenKind::Identifier => match self.peek_kind() {
                 lexer::tokens::TokenKind::LeftParen => self.parse_function_call(),
-                lexer::tokens::TokenKind::ColonColon => self.parse_namespace_push(),
                 _ => Some(parser::statements::Expression::Identifier(
                     self.current().value.to_owned(),
                 )),
@@ -910,26 +889,6 @@ impl Parser {
     fn parse_identifier_statement(&mut self) -> Option<parser::statements::Statement> {
         match self.current_kind() {
             lexer::tokens::TokenKind::Identifier => match self.peek_kind() {
-                lexer::tokens::TokenKind::ColonColon => {
-                    let namespace_name: String = self.current().value.clone();
-
-                    self.advance();
-                    self.advance();
-
-                    let identifier_statement: parser::statements::Statement =
-                        match self.parse_identifier_statement() {
-                            Some(identifier_statement) => identifier_statement,
-                            None => return None,
-                        };
-
-                    let mut push: Vec<parser::statements::Statement> = Vec::new();
-                    push.push(identifier_statement);
-
-                    return Some(parser::statements::Statement::NamespacePush {
-                        name: namespace_name,
-                        push,
-                    });
-                }
                 lexer::tokens::TokenKind::LeftParen => {
                     let func_call: parser::statements::Expression = match self.parse_function_call()
                     {

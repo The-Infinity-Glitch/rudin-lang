@@ -69,10 +69,6 @@ pub enum Statement {
         operator: lexer::tokens::TokenKind,
         value: Expression,
     },
-    NamespacePush {
-        name: String,
-        push: Vec<Statement>,
-    },
     FunctionCall(Expression),
 }
 
@@ -128,10 +124,6 @@ pub enum Expression {
     Call {
         name: String,
         arguments: Option<Box<Vec<Expression>>>,
-    },
-    NamespacePush {
-        name: String,
-        push: Vec<Expression>,
     },
 }
 
