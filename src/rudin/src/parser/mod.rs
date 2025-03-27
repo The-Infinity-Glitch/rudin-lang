@@ -660,6 +660,37 @@ impl Parser {
         });
     }
 
+    fn parse_return_statement(&mut self) -> Option<parser::statements::Statement> {
+        // "return" <- Token
+        let return_token: lexer::tokens::Token = self.current().clone();
+        self.advance();
+
+        let expression: parser::statements::Expression = match self.parse_expression() {
+            Some(expr) => expr,
+            None => {
+                return None;
+            }
+        };
+
+        dbg!(expression.clone());
+
+        self.advance();
+
+        if let Some(message) = handling::Message::expected_or_error(
+            lexer::tokens::TokenKind::Semicolon,
+            "end of statement",
+            self.current(),
+        ) {
+            self.output.push(message);
+            return None;
+        }
+
+        Some(parser::statements::Statement::Return {
+            start: return_token.position,
+            expression: Some(expression),
+        })
+    }
+
     /// Parse a block statement -> { ... statements ... }
     fn parse_block_statement(&mut self) -> Option<Box<Vec<parser::statements::Statement>>> {
         // '{'
@@ -684,6 +715,7 @@ impl Parser {
                 lexer::tokens::TokenKind::KwVar => self.parse_var_statement(),
                 lexer::tokens::TokenKind::KwConst => self.parse_const_statement(),
                 lexer::tokens::TokenKind::Identifier => self.parse_identifier_statement(),
+                lexer::tokens::TokenKind::KwReturn => self.parse_return_statement(),
                 _ => {
                     self.output.push(handling::Message::expected_error(
                         "a statement",
